@@ -1,8 +1,16 @@
 //
 // Created by polan on 20/12/2024.
 //
+#ifndef CONNMGR_H_
+#define CONNMGR_H_
 
-#ifndef CONNMGR_H
-#define CONNMGR_H
+#include <stdint.h>
+#include "sbuffer.h"
 
-#endif //CONNMGR_H
+// Starts the connection manager, listening for incoming connections.
+// Accepts a port number and maximum number of clients.
+// Writes sensor data into the shared buffer.
+void connmgr_listen(int port, int max_clients, sbuffer_t *buffer);
+
+#endif // CONNMGR_H_
+
