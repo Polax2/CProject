@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include "connmgr.h"
 #include "sbuffer.h"
+#include "datamgr.h"
+#include "sbuffer.h"
+#include "sensor_db.h"
 
 int main() {
     sbuffer_t *buffer = NULL;
@@ -15,15 +18,28 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    // Initialize the data manager
+    datamgr_init("room_sensor.map");
+
+    // Initialize the database
+    sensor_db_init("data.csv");
+
     // Start the connection manager
-    // Port: 12345, Max Clients: 5
     connmgr_listen(12345, 5, buffer);
 
-    // Free the shared buffer after the connection manager is done
-    if (sbuffer_free(&buffer) != SBUFFER_SUCCESS) {
-        fprintf(stderr, "Failed to free shared buffer\n");
-        return EXIT_FAILURE;
+    // Process data in a loop (or separate threads if applicable)
+    datamgr_process(buffer);
+
+    // Example: Retrieve data and write it to the database
+    sensor_data_t data;
+    while (sbuffer_remove(buffer, &data) == SBUFFER_SUCCESS) {
+        sensor_db_write(&data);
     }
+
+    // Free resources
+    datamgr_free();
+    sensor_db_close();
+    sbuffer_free(&buffer);
 
     return EXIT_SUCCESS;
 }
