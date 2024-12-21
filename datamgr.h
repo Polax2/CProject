@@ -7,7 +7,7 @@
 #include "sbuffer.h"
 #include "config.h"
 
-// Initialize the data manager with the room-sensor map file
+// Initialize the data manager and load the room-sensor map
 void datamgr_init(const char *map_file);
 
 // Process data from the shared buffer

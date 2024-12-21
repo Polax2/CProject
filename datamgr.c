@@ -3,7 +3,8 @@
 //
 
 #include "datamgr.h"
-#include "dplist.h"
+#include "lib/dplist.h"
+#include "sensor_db.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,8 @@
 #ifndef SET_MIN_TEMP
 #define SET_MIN_TEMP 10.0
 #endif
+
+#define RUN_AVG_LENGTH 5  // Number of readings for running average
 
 typedef struct {
     uint16_t sensor_id;
@@ -42,7 +45,7 @@ int element_compare(void *x, void *y) {
     return ((sensor_node_t *)x)->sensor_id - ((sensor_node_t *)y)->sensor_id;
 }
 
-// Initialize the data manager
+// Initialize the data manager and load the room-sensor map
 void datamgr_init(const char *map_file) {
     FILE *fp = fopen(map_file, "r");
     if (fp == NULL) {
@@ -63,7 +66,6 @@ void datamgr_init(const char *map_file) {
         memset(new_sensor.temp_values, 0, sizeof(new_sensor.temp_values));
         sensor_list = dpl_insert_at_index(sensor_list, &new_sensor, dpl_size(sensor_list), true);
     }
-
     fclose(fp);
 }
 
@@ -73,6 +75,7 @@ void datamgr_process(sbuffer_t *buffer) {
 
     while (sbuffer_remove(buffer, &data) == SBUFFER_SUCCESS) {
         sensor_node_t *sensor = NULL;
+
         for (int i = 0; i < dpl_size(sensor_list); i++) {
             sensor_node_t *node = dpl_get_element_at_index(sensor_list, i);
             if (node->sensor_id == data.id) {
@@ -82,7 +85,7 @@ void datamgr_process(sbuffer_t *buffer) {
         }
 
         if (sensor == NULL) {
-            fprintf(stderr, "Warning: Sensor ID %hu not found in map file\n", data.id);
+            fprintf(stderr, "Warning: Sensor ID %hu not found\n", data.id);
             continue;
         }
 
@@ -97,13 +100,15 @@ void datamgr_process(sbuffer_t *buffer) {
         }
         sensor->running_avg = sum / count;
 
-        // Check temperature thresholds
+        // Log temperature alerts
         if (sensor->running_avg > SET_MAX_TEMP) {
-            fprintf(stderr, "Sensor %hu in room %hu: Too hot (avg = %.2f)\n",
-                    sensor->sensor_id, sensor->room_id, sensor->running_avg);
+            fprintf(stderr, "ALERT: Room %hu is too hot! Avg: %.2f\n",
+                    sensor->room_id, sensor->running_avg);
+            sensor_db_log_error("Temperature too high");
         } else if (sensor->running_avg < SET_MIN_TEMP) {
-            fprintf(stderr, "Sensor %hu in room %hu: Too cold (avg = %.2f)\n",
-                    sensor->sensor_id, sensor->room_id, sensor->running_avg);
+            fprintf(stderr, "ALERT: Room %hu is too cold! Avg: %.2f\n",
+                    sensor->room_id, sensor->running_avg);
+            sensor_db_log_error("Temperature too low");
         }
     }
 }
@@ -112,4 +117,3 @@ void datamgr_process(sbuffer_t *buffer) {
 void datamgr_free() {
     dpl_free(&sensor_list, true);
 }
-

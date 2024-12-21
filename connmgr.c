@@ -22,7 +22,7 @@ typedef struct {
 void *client_handler(void *arg) {
     thread_arg_t *thread_arg = (thread_arg_t *)arg;
     tcpsock_t *client = thread_arg->client;
-    sbuffer_t *buffer = thread_arg->buffer;
+    sbuffer_t *buffer = thread_arg->buffer;  // Shared buffer passed from connmgr_listen
     free(thread_arg);
 
     sensor_data_t data;
@@ -51,9 +51,8 @@ void *client_handler(void *arg) {
         }
 
         // Log received data
-        printf("Received data: ID = %(" PRIu16 "), Value = %f, Timestamp = %ld\n",
+        printf("Received data: ID = %" PRIu16 ", Value = %f, Timestamp = %ld\n",
         data.id, data.value, (long)data.ts);
-
 
         // Write data to the shared buffer
         if (sbuffer_insert(buffer, &data) != SBUFFER_SUCCESS) {
@@ -72,30 +71,37 @@ void connmgr_listen(int port, int max_clients, sbuffer_t *buffer) {
     pthread_t thread_id;
     int active_clients = 0;
 
+    // Open server socket
     ERROR_HANDLER(tcp_passive_open(&server, port) != TCP_NO_ERROR, "Failed to open TCP socket");
 
     printf("Connection manager listening on port %d\n", port);
 
     while (active_clients < max_clients) {
+        // Accept incoming client connection
         if (tcp_wait_for_connection(server, &client) == TCP_NO_ERROR) {
             printf("Client connected\n");
+
+            // Allocate memory for thread arguments
             thread_arg_t *arg = malloc(sizeof(thread_arg_t));
             arg->client = client;
-            arg->buffer = buffer;
+            arg->buffer = buffer;  // Pass the shared buffer to the thread
 
+            // Create a new thread to handle the client
             if (pthread_create(&thread_id, NULL, client_handler, arg) != 0) {
                 fprintf(stderr, "Error creating client thread\n");
                 tcp_close(&client);
                 free(arg);
                 continue;
             }
-            pthread_detach(thread_id); // No need to join threads
+
+            pthread_detach(thread_id);
             active_clients++;
         } else {
             fprintf(stderr, "Error accepting client connection\n");
         }
     }
 
+    // Close server socket
     tcp_close(&server);
     printf("Connection manager shutting down\n");
 }
