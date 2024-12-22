@@ -2,20 +2,22 @@
 // Created by polan on 20/12/2024.
 //
 
-#ifndef SENSOR_DB_H_
-#define SENSOR_DB_H_
+#ifndef SENSOR_DB_H
+#define SENSOR_DB_H
 
 #include "config.h"
-#include "sbuffer.h"
 
-// Initialize the database (or storage file)
+// Initializes the sensor database
 void sensor_db_init(const char *filename);
 
-// Write sensor data to the database (or file)
+// Writes sensor data to the database
 void sensor_db_write(sensor_data_t *data);
 
-// Close the database (or storage file)
+// Logs error messages to the database
+void sensor_db_log_error(const char *message);
+
+// Closes the database file
 void sensor_db_close();
 
-#endif // SENSOR_DB_H_
+#endif // SENSOR_DB_H
 
