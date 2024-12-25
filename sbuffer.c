@@ -1,9 +1,7 @@
-//
-// Created by polan on 20/12/2024.
-//
-
-#include "sbuffer.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "sbuffer.h"
 #include <pthread.h>
 
 typedef struct sbuffer_node {
@@ -18,22 +16,23 @@ struct sbuffer {
     pthread_cond_t cond;
 };
 
-// Initializes the shared buffer
+// Initialize the shared buffer
 int sbuffer_init(sbuffer_t **buffer) {
     *buffer = malloc(sizeof(sbuffer_t));
-    if (*buffer == NULL) return SBUFFER_FAILURE;
+    if (!(*buffer)) return SBUFFER_FAILURE;
 
     (*buffer)->head = NULL;
     (*buffer)->tail = NULL;
+
     pthread_mutex_init(&(*buffer)->mutex, NULL);
     pthread_cond_init(&(*buffer)->cond, NULL);
 
     return SBUFFER_SUCCESS;
 }
 
-// Frees the shared buffer
+// Free the shared buffer
 int sbuffer_free(sbuffer_t **buffer) {
-    if (buffer == NULL || *buffer == NULL) return SBUFFER_FAILURE;
+    if (!(*buffer)) return SBUFFER_FAILURE;
 
     sbuffer_node_t *current = (*buffer)->head;
     while (current) {
@@ -46,18 +45,14 @@ int sbuffer_free(sbuffer_t **buffer) {
     pthread_cond_destroy(&(*buffer)->cond);
     free(*buffer);
     *buffer = NULL;
-
     return SBUFFER_SUCCESS;
 }
 
-// Inserts data into the buffer (thread-safe)
-int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
-    if (buffer == NULL || data == NULL) return SBUFFER_FAILURE;
-
+int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data) {
     sbuffer_node_t *new_node = malloc(sizeof(sbuffer_node_t));
-    if (new_node == NULL) return SBUFFER_FAILURE;
+    if (!new_node) return SBUFFER_FAILURE;
 
-    new_node->data = *data;
+    memcpy(&new_node->data, data, sizeof(sensor_data_t));
     new_node->next = NULL;
 
     pthread_mutex_lock(&buffer->mutex);
@@ -69,32 +64,33 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
     }
     buffer->tail = new_node;
 
+    printf("Inserted into buffer: SensorID = %hu, Value = %.2f\n",
+            data->id, data->value);
+
     pthread_cond_signal(&buffer->cond);
     pthread_mutex_unlock(&buffer->mutex);
 
     return SBUFFER_SUCCESS;
 }
 
-// Removes data from the buffer (thread-safe)
-int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
-    if (buffer == NULL || data == NULL) return SBUFFER_FAILURE;
 
+// Remove data from the buffer
+int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
     pthread_mutex_lock(&buffer->mutex);
 
-    while (buffer->head == NULL) {
+    while (!buffer->head) {
         pthread_cond_wait(&buffer->cond, &buffer->mutex);
     }
 
-    sbuffer_node_t *node = buffer->head;
-    *data = node->data;
-    buffer->head = node->next;
-    if (buffer->head == NULL) {
-        buffer->tail = NULL;
-    }
+    sbuffer_node_t *old_head = buffer->head;
+    memcpy(data, &old_head->data, sizeof(sensor_data_t));
 
-    free(node);
+    buffer->head = old_head->next;
+    if (!buffer->head) buffer->tail = NULL;
+
+    free(old_head);
+
     pthread_mutex_unlock(&buffer->mutex);
 
     return SBUFFER_SUCCESS;
 }
-

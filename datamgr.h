@@ -1,19 +1,33 @@
 //
 // Created by polan on 20/12/2024.
 //
-#ifndef DATAMGR_H_
-#define DATAMGR_H_
+#ifndef DATAMGR_H
+#define DATAMGR_H
 
+#include <stdint.h>
 #include "sbuffer.h"
-#include "config.h"
 
-// Initialize the data manager and load the room-sensor map
-void datamgr_init(const char *map_file);
+/**
+ * Initializes the Data Manager.
+ * Reads the room-sensor mapping from the file and sets up internal structures.
+ *
+ * @param map_file Path to the room-sensor mapping file.
+ * @return 0 on success, -1 on failure.
+ */
+int datamgr_init(const char *map_file);
 
-// Process data from the shared buffer
-void datamgr_process(sbuffer_t *buffer);
-
-// Free resources used by the data manager
+/**
+ * Cleans up resources used by the Data Manager.
+ */
 void datamgr_free();
 
-#endif // DATAMGR_H_
+/**
+ * Processes data from the shared buffer.
+ * Continuously fetches data, calculates running averages, and checks temperature thresholds.
+ *
+ * @param buffer Pointer to the shared buffer.
+ * @return NULL
+ */
+void *datamgr_process(void *buffer);
+
+#endif // DATAMGR_H

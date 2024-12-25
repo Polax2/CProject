@@ -1,40 +1,41 @@
 //
 // Created by polan on 20/12/2024.
 //
+
 #include "sensor_db.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <pthread.h>
 
 static FILE *db_file = NULL;
+static pthread_mutex_t db_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Initialize the database (or storage file)
 void sensor_db_init(const char *filename) {
-    db_file = fopen(filename, "w");  // Open file in write mode
+    db_file = fopen(filename, "w");
     if (db_file == NULL) {
         fprintf(stderr, "Error: Cannot create file %s\n", filename);
         exit(EXIT_FAILURE);
     }
 
-    // Write the CSV header to the file
     fprintf(db_file, "SensorID,Value,Timestamp\n");
-    fflush(db_file);  // Ensure the header is written immediately
+    fflush(db_file);
     printf("Sensor DB initialized: %s\n", filename);
 }
 
+// Write sensor data to the database (CSV file)
 void sensor_db_write(sensor_data_t *data) {
     if (db_file == NULL) {
         fprintf(stderr, "Error: Database not initialized\n");
         return;
     }
 
-    printf("Writing to CSV: ID = %hu, Value = %.2f, Timestamp = %ld\n",
-           data->id, data->value, (long)data->ts);  // Debug print
-
+    pthread_mutex_lock(&db_mutex);
     fprintf(db_file, "%hu,%.2f,%ld\n", data->id, data->value, (long)data->ts);
-    fflush(db_file);  // Flush to ensure the data is written immediately
+    fflush(db_file);
+    pthread_mutex_unlock(&db_mutex);
 }
-
 
 // Write error logs to the database
 void sensor_db_log_error(const char *message) {

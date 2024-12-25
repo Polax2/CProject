@@ -1,119 +1,155 @@
-//
-// Created by polan on 20/12/2024.
-//
-
-#include "datamgr.h"
-#include "lib/dplist.h"
-#include "sensor_db.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
+#include "datamgr.h"
+#include "sbuffer.h"
+#include "config.h"
+#include <inttypes.h>
+#include <unistd.h>
 
-#ifndef SET_MAX_TEMP
-#define SET_MAX_TEMP 25.0
-#endif
-
-#ifndef SET_MIN_TEMP
-#define SET_MIN_TEMP 10.0
-#endif
-
-#define RUN_AVG_LENGTH 5  // Number of readings for running average
+#define RUNNING_AVG_COUNT 5
+#define TEMP_THRESHOLD_HIGH 25.0
+#define TEMP_THRESHOLD_LOW 18.0
 
 typedef struct {
     uint16_t sensor_id;
     uint16_t room_id;
     double running_avg;
-    double temp_values[RUN_AVG_LENGTH];
-    int temp_count;
-} sensor_node_t;
+    double last_values[RUNNING_AVG_COUNT];
+    int value_index;
+    int value_count;
+} sensor_room_t;
 
-static dplist_t *sensor_list = NULL;
+static sensor_room_t *sensor_rooms = NULL;
+static int sensor_room_count = 0;
+static pthread_mutex_t data_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Callback functions for the doubly linked list
-void *element_copy(void *element) {
-    sensor_node_t *new_node = malloc(sizeof(sensor_node_t));
-    memcpy(new_node, element, sizeof(sensor_node_t));
-    return new_node;
+// Maps sensor ID to room ID
+static int find_room_by_sensor(uint16_t sensor_id) {
+    for (int i = 0; i < sensor_room_count; i++) {
+        if (sensor_rooms[i].sensor_id == sensor_id) {
+            return i;
+        }
+    }
+    return -1;
 }
 
-void element_free(void **element) {
-    free(*element);
-    *element = NULL;
-}
-
-int element_compare(void *x, void *y) {
-    return ((sensor_node_t *)x)->sensor_id - ((sensor_node_t *)y)->sensor_id;
-}
-
-// Initialize the data manager and load the room-sensor map
-void datamgr_init(const char *map_file) {
+// Initializes the Data Manager
+int datamgr_init(const char *map_file) {
     FILE *fp = fopen(map_file, "r");
-    if (fp == NULL) {
-        fprintf(stderr, "Error: Cannot open room-sensor map file\n");
-        exit(EXIT_FAILURE);
+    if (!fp) {
+        perror("Failed to open room-sensor map file");
+        return -1;
     }
 
-    sensor_list = dpl_create(element_copy, element_free, element_compare);
-
+    int count = 0;
     uint16_t room_id, sensor_id;
-    while (fscanf(fp, "%hu %hu", &room_id, &sensor_id) == 2) {
-        sensor_node_t new_sensor = {
-            .sensor_id = sensor_id,
-            .room_id = room_id,
-            .running_avg = 0.0,
-            .temp_count = 0
-        };
-        memset(new_sensor.temp_values, 0, sizeof(new_sensor.temp_values));
-        sensor_list = dpl_insert_at_index(sensor_list, &new_sensor, dpl_size(sensor_list), true);
+    while (fscanf(fp, "%" SCNu16 " %" SCNu16, &sensor_id, &room_id) == 2) {
+        count++;
+    }
+    fseek(fp, 0, SEEK_SET);
+
+    sensor_rooms = malloc(sizeof(sensor_room_t) * count);
+    if (!sensor_rooms) {
+        perror("Failed to allocate memory for sensors");
+        fclose(fp);
+        return -1;
+    }
+
+    sensor_room_count = 0;
+    while (fscanf(fp, "%" SCNu16 " %" SCNu16, &sensor_id, &room_id) == 2) {
+        sensor_rooms[sensor_room_count].sensor_id = sensor_id;
+        sensor_rooms[sensor_room_count].room_id = room_id;
+        sensor_rooms[sensor_room_count].running_avg = 0.0;
+        memset(sensor_rooms[sensor_room_count].last_values, 0, sizeof(double) * RUNNING_AVG_COUNT);
+        sensor_rooms[sensor_room_count].value_index = 0;
+        sensor_rooms[sensor_room_count].value_count = 0;
+        sensor_room_count++;
     }
     fclose(fp);
+    return 0;
 }
 
-// Process data from the shared buffer
-void datamgr_process(sbuffer_t *buffer) {
-    sensor_data_t data;
+// Frees Data Manager resources
+void datamgr_free() {
+    free(sensor_rooms);
+    sensor_rooms = NULL;
+    sensor_room_count = 0;
+}
 
-    while (sbuffer_remove(buffer, &data) == SBUFFER_SUCCESS) {
-        sensor_node_t *sensor = NULL;
-
-        for (int i = 0; i < dpl_size(sensor_list); i++) {
-            sensor_node_t *node = dpl_get_element_at_index(sensor_list, i);
-            if (node->sensor_id == data.id) {
-                sensor = node;
-                break;
-            }
+// Write sensor data to CSV
+void write_to_csv(sensor_room_t *sensor) {
+    FILE *csv_file = fopen("data.csv", "a");
+    if (csv_file) {
+        // Add header if the file is empty
+        fseek(csv_file, 0, SEEK_END);
+        if (ftell(csv_file) == 0) {
+            fprintf(csv_file, "SensorID,Value,Timestamp\n");
         }
 
-        if (sensor == NULL) {
-            fprintf(stderr, "Warning: Sensor ID %hu not found\n", data.id);
-            continue;
-        }
-
-        // Update running average
-        sensor->temp_values[sensor->temp_count % RUN_AVG_LENGTH] = data.value;
-        sensor->temp_count++;
-
-        double sum = 0.0;
-        int count = (sensor->temp_count < RUN_AVG_LENGTH) ? sensor->temp_count : RUN_AVG_LENGTH;
-        for (int i = 0; i < count; i++) {
-            sum += sensor->temp_values[i];
-        }
-        sensor->running_avg = sum / count;
-
-        // Log temperature alerts
-        if (sensor->running_avg > SET_MAX_TEMP) {
-            fprintf(stderr, "ALERT: Room %hu is too hot! Avg: %.2f\n",
-                    sensor->room_id, sensor->running_avg);
-            sensor_db_log_error("Temperature too high");
-        } else if (sensor->running_avg < SET_MIN_TEMP) {
-            fprintf(stderr, "ALERT: Room %hu is too cold! Avg: %.2f\n",
-                    sensor->room_id, sensor->running_avg);
-            sensor_db_log_error("Temperature too low");
-        }
+        fprintf(csv_file, "%hu,%.2f,%ld\n",
+                sensor->sensor_id,
+                sensor->running_avg,
+                time(NULL));
+        fclose(csv_file);
+    } else {
+        perror("Failed to open data.csv");
     }
 }
 
-// Free resources used by the data manager
-void datamgr_free() {
-    dpl_free(&sensor_list, true);
+// Process incoming sensor data
+static void process_sensor_data(const sensor_data_t *data) {
+    pthread_mutex_lock(&data_mutex);
+
+    int idx = find_room_by_sensor(data->id);
+    if (idx == -1) {
+        printf("Sensor ID %d not found in mapping.\n", data->id);
+        pthread_mutex_unlock(&data_mutex);
+        return;
+    }
+
+    sensor_room_t *sensor = &sensor_rooms[idx];
+
+    // Update running average
+    sensor->last_values[sensor->value_index] = data->value;
+    sensor->value_index = (sensor->value_index + 1) % RUNNING_AVG_COUNT;
+    if (sensor->value_count < RUNNING_AVG_COUNT) {
+        sensor->value_count++;
+    }
+
+    double sum = 0.0;
+    for (int i = 0; i < sensor->value_count; i++) {
+        sum += sensor->last_values[i];
+    }
+    sensor->running_avg = sum / sensor->value_count;
+
+    // Threshold check
+    if (sensor->running_avg > TEMP_THRESHOLD_HIGH) {
+        printf("Room %d is too hot (Avg: %.2f)\n", sensor->room_id, sensor->running_avg);
+    } else if (sensor->running_avg < TEMP_THRESHOLD_LOW) {
+        printf("Room %d is too cold (Avg: %.2f)\n", sensor->room_id, sensor->running_avg);
+    }
+
+    printf("Writing to CSV: SensorID = %hu, Avg = %.2f\n",
+            sensor->sensor_id, sensor->running_avg);
+
+    write_to_csv(sensor);  // Call CSV writer
+    pthread_mutex_unlock(&data_mutex);
+}
+
+// Data Manager process loop
+void *datamgr_process(void *arg) {
+    sbuffer_t *buffer = (sbuffer_t *)arg;
+    sensor_data_t data;
+
+    while (1) {
+        if (sbuffer_remove(buffer, &data) == SBUFFER_SUCCESS) {
+            printf("Processing SensorID: %hu, Value: %.2f\n",
+                    data.id, data.value);
+            process_sensor_data(&data);
+        }
+        return NULL;
+    }
+
 }
