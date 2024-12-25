@@ -22,19 +22,19 @@ void sensor_db_init(const char *filename) {
     printf("Sensor DB initialized: %s\n", filename);
 }
 
-// Write sensor data to the database (or file)
 void sensor_db_write(sensor_data_t *data) {
     if (db_file == NULL) {
         fprintf(stderr, "Error: Database not initialized\n");
         return;
     }
 
-    // Log the sensor data to the CSV file
+    printf("Writing to CSV: ID = %hu, Value = %.2f, Timestamp = %ld\n",
+           data->id, data->value, (long)data->ts);  // Debug print
+
     fprintf(db_file, "%hu,%.2f,%ld\n", data->id, data->value, (long)data->ts);
     fflush(db_file);  // Flush to ensure the data is written immediately
-    printf("Sensor DB: Data written (ID: %hu, Value: %.2f, Timestamp: %ld)\n",
-           data->id, data->value, (long)data->ts);
 }
+
 
 // Write error logs to the database
 void sensor_db_log_error(const char *message) {
