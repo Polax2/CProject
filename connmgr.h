@@ -1,15 +1,25 @@
 //
 // Created by polan on 20/12/2024.
 //
-#ifndef CONNMGR_H_
-#define CONNMGR_H_
 
+#ifndef CONNMGR_H
+#define CONNMGR_H
+
+#include <pthread.h>
 #include "sbuffer.h"
+#include "lib/tcpsock.h"
 
-// Listen for incoming sensor node connections
-void connmgr_listen(int port, int max_clients, sbuffer_t *buffer);
+struct connmgr_args {
+    int args[3];  // Port, max_clients, timeout
+    sbuffer_t *buffer;
+    pthread_mutex_t *mutex;
+    pthread_cond_t *cond;
+    int log_fd;
+    pthread_mutex_t *pipe_mutex;
+    tcpsock_t *client;
+};
 
-// Close all connections and clean up
-void connmgr_free();
+void connmgr_listen(struct connmgr_args *args);
+void *handle_client(void *arg);
 
-#endif // CONNMGR_H_
+#endif /* CONNMGR_H */
