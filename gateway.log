@@ -1,0 +1,4 @@
+Server started on port 5678.
+New client connected.
+Sensor node connected (socket descriptor: 5).
+Received data: ID=15, Value=19.76, Timestamp=1735233206
