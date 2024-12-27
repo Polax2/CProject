@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/wait.h>
 #include "connmgr.h"
 #include "sbuffer.h"
 #include "sensor_db.h"
@@ -81,13 +82,13 @@ int main(int argc, char *argv[]) {
         logger_process();
         close(log_pipe_fd[0]);
         exit(EXIT_SUCCESS);
-    } else if (pid== 1) {
-        close(log_pipe_fd[0]);  // Close write-end in child
+    } else {
+        close(log_pipe_fd[0]);  // Close read-end in parent
         main_process(port, max_clients);
         close(log_pipe_fd[1]);
-        exit(EXIT_SUCCESS);
-
+        wait(NULL);  // Ensure the parent waits for the child
     }
+
 
 
 
