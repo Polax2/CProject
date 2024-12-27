@@ -19,4 +19,6 @@ void *sensor_db_process(void *args);
 
 void sensor_db_write(sensor_data_t *data);
 
+void sensor_db_cleanup(void);
+
 #endif // SENSOR_DB_H

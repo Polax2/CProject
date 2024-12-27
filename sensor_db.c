@@ -1,7 +1,3 @@
-//
-// Created by polan on 20/12/2024.
-//
-
 #include "sensor_db.h"
 #include "sbuffer.h"
 #include "config.h"
@@ -9,64 +5,49 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include "connmgr.h"
 
-// Database file handle
-static FILE *db_file = NULL;
 
-// Initialize the database file
+extern pthread_mutex_t pipe_mutex;  // Reference the mutex from main.c
+extern void log_event(const char *format, ...);  // Reference log_event from connmgr.c
+
+static FILE *data_file = NULL;
+
 void sensor_db_init(const char *filename) {
-    db_file = fopen(filename, "w");  // Open file in write mode
-    if (!db_file) {
-        fprintf(stderr, "ERROR: Cannot create file %s\n", filename);
+    data_file = fopen(filename, "w");
+    if (!data_file) {
+        log_event("Failed to open %s for writing", filename);
+        perror("File open error");
         exit(EXIT_FAILURE);
     }
-    fprintf(db_file, "SensorID,Value,Timestamp\n");
-    fflush(db_file);
-    printf("Sensor DB initialized: %s\n", filename);
+    fprintf(data_file, "sensor_id,value,timestamp\n");
+    fflush(data_file);
+    log_event("Sensor DB initialized, logging to %s", filename);
 }
 
-// Write sensor data to the database
-void sensor_db_write(sensor_data_t *data) {
-    if (!db_file) {
-        fprintf(stderr, "ERROR: Database not initialized\n");
-        return;
-    }
-
-    fprintf(db_file, "%hu,%.2f,%ld\n", data->id, data->value, (long)data->ts);
-    fflush(db_file);
-    printf("Sensor DB: Data written (ID: %hu, Value: %.2f, Timestamp: %ld)\n",
-           data->id, data->value, (long)data->ts);
-}
-
-// Log errors to the database file
-void sensor_db_log_error(const char *message) {
-    if (!db_file) {
-        fprintf(stderr, "ERROR: Cannot write to database log\n");
-        return;
-    }
-    time_t now = time(NULL);
-    fprintf(db_file, "ERROR,,%ld,%s\n", (long)now, message);
-    fflush(db_file);
-    fprintf(stderr, "Sensor DB Log Error: %s\n", message);
-}
-
-// Database processing function (runs in thread)
-void *sensor_db_process(void *arg) {
-    sbuffer_t *buffer = (sbuffer_t *)arg;
+void *sensor_db_process(void *buffer) {
+    sbuffer_t *shared_buffer = (sbuffer_t *)buffer;
     sensor_data_t data;
 
-    while (sbuffer_remove(buffer, &data) == SBUFFER_SUCCESS) {
-        sensor_db_write(&data);
-    }
+    while (sbuffer_remove(shared_buffer, &data) == SBUFFER_SUCCESS) {
+        pthread_mutex_lock(&pipe_mutex);  // Mutex for writing to data.csv
+        fprintf(data_file, "%hu,%.2f,%ld\n", data.id, data.value, (long)data.ts);
+        fflush(data_file);
+        pthread_mutex_unlock(&pipe_mutex);
 
+        log_event("Stored data - ID: %hu Value: %.2f Timestamp: %ld",
+                  data.id, data.value, (long)data.ts);
+    }
+    log_event("Sensor DB process completed");
     return NULL;
 }
 
-// Close the database file
-void sensor_db_close() {
-    if (db_file) {
-        fclose(db_file);
-        db_file = NULL;
-        printf("Sensor DB closed\n");
+void sensor_db_cleanup() {
+    if (data_file) {
+        fclose(data_file);
+        log_event("Closed data.csv");
     }
 }

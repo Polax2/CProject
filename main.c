@@ -1,57 +1,44 @@
-//
-// Created by polan on 20/12/2024.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <fcntl.h>
-#include <string.h>
 #include <signal.h>
+#include <string.h>
 #include "connmgr.h"
-#include "datamgr.h"
-#include "sensor_db.h"
 #include "sbuffer.h"
-#include "config.h"
+#include "sensor_db.h"
 
-// Shared buffer
 sbuffer_t *shared_buffer;
+pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
 
-// Pipe and mutex for logging
-int log_pipe_fd;
+// Pipe and logger variables
+int log_pipe_fd[2];  // 0 - Read, 1 - Write
 pthread_mutex_t pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void *log_process(void *arg) {
-    int pipe_fd = *((int *)arg);
-    FILE *log_file = fopen("gateway.log", "w");
+// Logger function to handle log writing
+void logger_process() {
+    FILE *log_file = fopen("gateway.log", "a");
     if (!log_file) {
-        perror("Failed to open gateway.log");
-        return NULL;
+        perror("Failed to open log file");
+        exit(EXIT_FAILURE);
     }
 
     char buffer[256];
     while (1) {
-        ssize_t bytes_read = read(pipe_fd, buffer, sizeof(buffer) - 1);
+        ssize_t bytes_read = read(log_pipe_fd[0], buffer, sizeof(buffer));
         if (bytes_read > 0) {
             buffer[bytes_read] = '\0';
-            if (strcmp(buffer, "TERMINATE") == 0) {
-                fprintf(log_file, "Log process received termination signal.\n");
-                fflush(log_file);
-                break;
-            }
             fprintf(log_file, "%s\n", buffer);
             fflush(log_file);
         }
     }
-    fclose(log_file);
-    return NULL;
 }
 
+// Main sensor gateway process
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
+    if (argc != 3) {
         fprintf(stderr, "Usage: %s <port> <max_clients>\n", argv[0]);
         return EXIT_FAILURE;
     }
@@ -59,68 +46,52 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[1]);
     int max_clients = atoi(argv[2]);
 
-    // Initialize shared buffer
-    if (sbuffer_init(&shared_buffer) != SBUFFER_SUCCESS) {
-        fprintf(stderr, "ERROR: Shared buffer initialization failed\n");
+    if (pipe(log_pipe_fd) < 0) {
+        perror("Pipe creation failed");
         return EXIT_FAILURE;
     }
 
-    // Create pipe for logging
-    int fd[2];
-    if (pipe(fd) < 0) {
-        perror("ERROR: Pipe creation failed");
-        return EXIT_FAILURE;
-    }
-    log_pipe_fd = fd[1];
-
-    // Fork to create logger process
-    pid_t log_pid = fork();
-    if (log_pid < 0) {
+    int pid = fork();
+    if (pid < 0) {
         perror("Fork failed");
         return EXIT_FAILURE;
+    } else if (pid == 0) {
+        close(log_pipe_fd[1]);  // Close write-end in child
+        logger_process();
+        exit(EXIT_SUCCESS);
     }
 
-    if (log_pid == 0) {
-        // Child process - Logger
-        close(fd[1]);  // Close write end
-        log_process(&fd[0]);  // Log to gateway.log
-        close(fd[0]);
-        return EXIT_SUCCESS;
+    close(log_pipe_fd[0]);  // Close read-end in parent
+
+    if (sbuffer_init(&shared_buffer) != SBUFFER_SUCCESS) {
+        fprintf(stderr, "Failed to initialize shared buffer\n");
+        return EXIT_FAILURE;
     }
 
-    // Parent process
-    close(fd[0]);  // Close read end
+    pthread_t connmgr_tid, storagemgr_tid;
 
-    pthread_t connmgr_tid, datamgr_tid, storagemgr_tid;
-
-    // Initialize connection manager arguments
     struct connmgr_args conn_args = {
-        .args = {port, max_clients, 10},
+        .port = port,
+        .max_clients = max_clients,
         .buffer = shared_buffer,
-        .mutex = &pipe_mutex,
-        .cond = NULL,
-        .log_fd = log_pipe_fd,
-        .pipe_mutex = &pipe_mutex,
-        .client = NULL
+        .mutex = &buffer_mutex,
+        .cond = &buffer_cond,
+        .log_fd = log_pipe_fd[1],  // Pass write-end to connection manager
+        .pipe_mutex = &pipe_mutex
     };
 
-    // Start threads for connection, data management, and storage
     pthread_create(&connmgr_tid, NULL, (void *(*)(void *))connmgr_listen, &conn_args);
-    pthread_create(&datamgr_tid, NULL, (void *(*)(void *))datamgr_process, shared_buffer);
-    pthread_create(&storagemgr_tid, NULL, (void *(*)(void *))sensor_db_process, shared_buffer);
+    pthread_create(&storagemgr_tid, NULL, sensor_db_process, shared_buffer);
 
     pthread_join(connmgr_tid, NULL);
-    pthread_join(datamgr_tid, NULL);
     pthread_join(storagemgr_tid, NULL);
 
-    // Cleanup
     sbuffer_free(shared_buffer);
+    pthread_mutex_destroy(&buffer_mutex);
     pthread_mutex_destroy(&pipe_mutex);
+    pthread_cond_destroy(&buffer_cond);
 
-    // Send termination signal to logger process
-    write(fd[1], "TERMINATE", strlen("TERMINATE") + 1);
-    close(fd[1]);
-    waitpid(log_pid, NULL, 0);
+    close(log_pipe_fd[1]);  // Close write-end after finishing
 
     return EXIT_SUCCESS;
 }

@@ -1,7 +1,3 @@
-//
-// Created by polan on 20/12/2024.
-//
-
 #ifndef CONNMGR_H
 #define CONNMGR_H
 
@@ -10,7 +6,8 @@
 #include "lib/tcpsock.h"
 
 struct connmgr_args {
-    int args[3];  // Port, max_clients, timeout
+    int port;
+    int max_clients;
     sbuffer_t *buffer;
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
@@ -20,6 +17,8 @@ struct connmgr_args {
 };
 
 void connmgr_listen(struct connmgr_args *args);
-void *handle_client(void *arg);
+void *client_handler(void *arg);
+void log_event(const char *format, ...);
 
-#endif /* CONNMGR_H */
+
+#endif

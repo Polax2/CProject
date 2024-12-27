@@ -1,17 +1,26 @@
-#ifndef _SBUFFER_H_
-#define _SBUFFER_H_
+#ifndef SBUFFER_H
+#define SBUFFER_H
 
 #include "config.h"
-
-#define SBUFFER_SUCCESS 0
-#define SBUFFER_FAILURE -1
+#include <pthread.h>
 
 typedef struct sbuffer sbuffer_t;
 
+// Initialize buffer
 int sbuffer_init(sbuffer_t **buffer);
-int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data);
+
+// Insert data into buffer
+int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data);
+
+// Remove data from buffer
 int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data);
-void sbuffer_free(sbuffer_t *buffer);
 
+// Free buffer
+void sbuffer_free(sbuffer_t *buffer);  // Fixed to match sbuffer.c (void return)
 
-#endif  // SBUFFER_H
+// Status codes
+#define SBUFFER_SUCCESS 0
+#define SBUFFER_FAILURE -1
+#define SBUFFER_NO_DATA 1  // Add this to align with the error handling in sbuffer.c
+
+#endif // SBUFFER_H
