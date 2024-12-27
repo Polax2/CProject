@@ -5,6 +5,7 @@
 #include "sbuffer.h"
 #include "lib/tcpsock.h"
 
+// Connection manager argument structure
 struct connmgr_args {
     int port;
     int max_clients;
@@ -16,9 +17,10 @@ struct connmgr_args {
     tcpsock_t *client;
 };
 
+// Function to listen for connections
 void connmgr_listen(struct connmgr_args *args);
-void *client_handler(void *arg);
-void log_event(const char *format, ...);
 
+// Declare log_event as external (used for logging)
+extern void log_event(const char *format, ...);
 
-#endif
+#endif // CONNMGR_H

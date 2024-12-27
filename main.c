@@ -3,11 +3,15 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <asm-generic/errno.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include "connmgr.h"
 #include "datamgr.h"
 #include "sbuffer.h"
 #include "sensor_db.h"
+
+#define TIMEOUT 5  // Timeout in seconds
 
 sbuffer_t *shared_buffer;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -21,7 +25,7 @@ pthread_t connmgr_tid, storagemgr_tid, datamgr_tid;
 
 // Logger function to handle log writing
 void logger_process() {
-    FILE *log_file = fopen("gateway.log", "a");
+    FILE *log_file = fopen("gateway.log", "w");
     if (!log_file) {
         perror("Failed to open log file");
         exit(EXIT_FAILURE);
@@ -38,6 +42,24 @@ void logger_process() {
     }
 }
 
+// // Timed wait function for threads to handle timeout
+// void timed_wait(pthread_mutex_t *mutex, pthread_cond_t *cond) {
+//     struct timeval now;
+//     struct timespec ts;
+//
+//     gettimeofday(&now, NULL);
+//     ts.tv_sec = now.tv_sec + TIMEOUT;
+//     ts.tv_nsec = now.tv_usec * 1000;
+//
+//     pthread_mutex_lock(mutex);
+//     int res = pthread_cond_timedwait(cond, mutex, &ts);
+//     pthread_mutex_unlock(mutex);
+//
+//     if (res == ETIMEDOUT) {
+//         printf("Thread timed out.\n");
+//     }
+// }
+
 // Main process logic - Creates 3 threads
 void main_process(int port, int max_clients) {
     if (sbuffer_init(&shared_buffer) != SBUFFER_SUCCESS) {
@@ -46,11 +68,19 @@ void main_process(int port, int max_clients) {
     }
 
     // Start connection, data, and storage manager threads
-    pthread_create(&connmgr_tid, NULL, (void *)connmgr_listen, shared_buffer);
-    pthread_create(&storagemgr_tid, NULL, (void *)sensor_db_process, shared_buffer);
-    pthread_create(&datamgr_tid, NULL, (void *)datamgr_process, shared_buffer);
+    if (pthread_create(&connmgr_tid, NULL, (void *)connmgr_listen, shared_buffer) != 0) {
+        perror("Failed to create connection manager thread");
+    }
+    if (pthread_create(&storagemgr_tid, NULL, (void *)sensor_db_process, shared_buffer) != 0) {
+        perror("Failed to create storage manager thread");
+    }
+    if (pthread_create(&datamgr_tid, NULL, (void *)datamgr_process, shared_buffer) != 0) {
+        perror("Failed to create data manager thread");
+    }
 
-    // Wait for connection and storage managers to finish
+    // // Wait for connection and storage managers to finish with timeout
+    // timed_wait(&buffer_mutex, &buffer_cond);
+
     pthread_join(connmgr_tid, NULL);
     pthread_join(storagemgr_tid, NULL);
     pthread_join(datamgr_tid, NULL);

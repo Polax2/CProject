@@ -8,19 +8,8 @@
 #include "config.h"
 #include "sbuffer.h"
 
-/**
- * Initialize the data manager with the room-sensor mapping file and log pipe
- */
-void datamgr_init(const char *map_file, int log_pipe);
-
-/**
- * Process data from the shared buffer
- */
+// Process sensor data from the shared buffer
 void *datamgr_process(void *buffer);
-
-/**
- * Free all resources used by the data manager
- */
-void datamgr_free();
+void log_event(const char *format, ...);
 
 #endif /* DATAMGR_H */

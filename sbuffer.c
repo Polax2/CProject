@@ -4,20 +4,6 @@
 #include "sbuffer.h"
 #include "config.h"
 
-// Internal node structure for FIFO buffer
-typedef struct sbuffer_node {
-    sensor_data_t data;
-    struct sbuffer_node *next;
-} sbuffer_node_t;  // Add typedef for sbuffer_node_t
-
-// Buffer structure
-struct sbuffer {
-    sbuffer_node_t *head;
-    sbuffer_node_t *tail;
-    pthread_mutex_t mutex;
-};
-
-// Initialize the buffer
 int sbuffer_init(sbuffer_t **buffer) {
     *buffer = malloc(sizeof(sbuffer_t));
     if (*buffer == NULL) return SBUFFER_FAILURE;

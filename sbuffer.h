@@ -1,26 +1,30 @@
 #ifndef SBUFFER_H
 #define SBUFFER_H
 
-#include "config.h"
 #include <pthread.h>
+#include "config.h"
 
-typedef struct sbuffer sbuffer_t;
+// Internal node structure for FIFO buffer
+typedef struct sbuffer_node {
+    sensor_data_t data;
+    struct sbuffer_node *next;
+} sbuffer_node_t;
 
-// Initialize buffer
+// Buffer structure
+typedef struct sbuffer {
+    sbuffer_node_t *head;
+    sbuffer_node_t *tail;
+    pthread_mutex_t mutex;
+} sbuffer_t;
+
+// Buffer operations
 int sbuffer_init(sbuffer_t **buffer);
-
-// Insert data into buffer
 int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data);
-
-// Remove data from buffer
 int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data);
+void sbuffer_free(sbuffer_t *buffer);
 
-// Free buffer
-void sbuffer_free(sbuffer_t *buffer);  // Fixed to match sbuffer.c (void return)
-
-// Status codes
 #define SBUFFER_SUCCESS 0
 #define SBUFFER_FAILURE -1
-#define SBUFFER_NO_DATA 1  // Add this to align with the error handling in sbuffer.c
+#define SBUFFER_NO_DATA -2
 
 #endif // SBUFFER_H
