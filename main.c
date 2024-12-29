@@ -16,6 +16,7 @@
 sbuffer_t *shared_buffer;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
+int pipe_fd[2];
 
 // Pipe and logger variables
 int log_pipe_fd[2];  // 0 - Read, 1 - Write
@@ -32,15 +33,36 @@ void logger_process() {
     }
 
     char buffer[256];
+    char *line;
+    int log_id = 0;
     while (1) {
-        ssize_t bytes_read = read(log_pipe_fd[0], buffer, sizeof(buffer));
+        ssize_t bytes_read = read(log_pipe_fd[0], buffer, sizeof(buffer) -1);
         if (bytes_read > 0) {
-            buffer[bytes_read] = '\0';
-            fprintf(log_file, "%s\n", buffer);
-            fflush(log_file);
+            buffer[bytes_read] = '\0'; // Null-terminate the string
+
+            // Process each line individually
+            line = strtok(buffer, "\n");
+            while (line != NULL) {
+                time_t now = time(NULL);
+                struct tm *timeinfo = localtime(&now);
+
+                char timestamp[20];
+                strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);
+
+                fprintf(log_file, "%6d %s %s\n", log_id++, timestamp, line);
+                fflush(log_file);
+
+                line = strtok(NULL, "\n"); // Get the next line
+            }
+        } else {
+            sleep(2);
+        break;
         }
     }
-}
+
+
+    }
+
 
 // // Timed wait function for threads to handle timeout
 // void timed_wait(pthread_mutex_t *mutex, pthread_cond_t *cond) {
@@ -76,6 +98,7 @@ void main_process(int port, int max_clients) {
     }
     if (pthread_create(&datamgr_tid, NULL, (void *)datamgr_process, shared_buffer) != 0) {
         perror("Failed to create data manager thread");
+    sleep(1);
     }
 
     // // Wait for connection and storage managers to finish with timeout
