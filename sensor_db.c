@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 
-extern int log_pipe_fd;
+extern int log_pipe_fd[2];
 extern pthread_mutex_t pipe_mutex;
 
 
@@ -20,6 +20,12 @@ void *sensor_db_process(void *buffer) {
     // sensor_data_t data;
 
     while (1) {
+        char msg[256];
+        snprintf(msg, 256, "Pozdrawiam z sensor_db\n");
+        log_to_logger(msg);
+        sleep(20);
         sleep(1);
     }
+
 }
+

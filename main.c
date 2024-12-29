@@ -16,13 +16,24 @@
 sbuffer_t *shared_buffer;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
-int pipe_fd[2];
+int log_pipe_fd[2];
 
 // Pipe and logger variables
 int log_pipe_fd[2];  // 0 - Read, 1 - Write
 pthread_mutex_t pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t connmgr_tid, storagemgr_tid, datamgr_tid;
+
+void log_to_logger(const char *msg) {
+    pthread_mutex_lock(&pipe_mutex);
+
+    ssize_t bytes_written = write(log_pipe_fd[1], msg, strlen(msg));
+    if (bytes_written < 0) {
+        perror("Log pipe write failed");
+    }
+
+    pthread_mutex_unlock(&pipe_mutex);
+}
 
 // Logger function to handle log writing
 void logger_process() {

@@ -24,8 +24,6 @@ struct connmgr_args {
 // Function to listen for connections
 void connmgr_listen(struct connmgr_args *args);
 
-// Declare log_event as external (used for logging)
-extern void log_event(const char *format, ...);
 
-void log_to_logger(char msg[256]);
+
 #endif // CONNMGR_H

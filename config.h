@@ -22,4 +22,6 @@ typedef struct {
     sensor_ts_t ts;
 } sensor_data_t;
 
+void log_to_logger(const char *msg);
+
 #endif /* _CONFIG_H_ */

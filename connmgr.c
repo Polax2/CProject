@@ -1,4 +1,5 @@
 #include "connmgr.h"
+#include "config.h"
 #include "sbuffer.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #include <stdarg.h>
 #include "lib/tcpsock.h"
 
-extern int log_pipe_fd;
+extern int log_pipe_fd[2];
 extern pthread_mutex_t pipe_mutex;
 
 //static void *client_handler(void *arg);
@@ -28,7 +29,7 @@ void connmgr_listen(struct connmgr_args *args) {
 
     while (1) {
         char msg[256];
-        snprintf(msg, 256, "Pozdrawiam z louvnium\n");
+        snprintf(msg, 256, "Pozdrawiam z Conn\n");
         log_to_logger(msg);
         sleep(20);
 
@@ -51,17 +52,6 @@ void connmgr_listen(struct connmgr_args *args) {
 
     // tcp_close(&server);
 }
-void log_to_logger(const char *msg) {
-    pthread_mutex_lock(&pipe_mutex);
-
-    ssize_t bytes_written = write(log_pipe_fd[1], msg, strlen(msg));
-    if (bytes_written < 0) {
-        perror("Log pipe write failed");
-    }
-
-    pthread_mutex_unlock(&pipe_mutex);
-}
-
 
 
 // Client handler thread function

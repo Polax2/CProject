@@ -12,7 +12,7 @@
 #include "config.h"
 
 
-extern int log_pipe_fd;
+extern int log_pipe_fd[2];
 extern pthread_mutex_t pipe_mutex;
 
 void *datamgr_process(void *buffer) {
@@ -20,6 +20,10 @@ void *datamgr_process(void *buffer) {
     // sensor_data_t data;
 
     while (1) {
+        char msg[256];
+        snprintf(msg, 256, "Pozdrawiam z datamgr\n");
+        log_to_logger(msg);
+        sleep(20);
         // if (sbuffer_remove(shared_buffer, &data) == SBUFFER_SUCCESS) {
         //     log_event("Processing data - ID: %hu, Value: %.2f", data.id, data.value);
         //     if (data.value < SET_MIN_TEMP) {
