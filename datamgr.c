@@ -15,26 +15,21 @@ void *datamgr_process(void *arg) {
     sensor_data_t *data;
 
     while (1) {
-        data = sbuffer_read(buffer);  // Read without removing
-        if (data == NULL) {
-            printf("Data Manager: No more data to process. Terminating...\n");
-            break;
-        }
+        data = sbuffer_read(buffer);  // Do not remove immediately
+        if (data == NULL) break;
 
         char msg[256];
-        snprintf(msg, sizeof(msg), "Processing Data (ID: %d, Value: %.2f)", data->id, data->value);
+        snprintf(msg, sizeof(msg), "Processing Data (ID: %d, Value: %.2f) \n", data->id, data->value);
         log_to_logger(msg);
 
-        if (data->value < SET_MIN_TEMP) {
-            snprintf(msg, sizeof(msg), "Temperature too low (ID: %d, Value: %.2f)", data->id, data->value);
-            log_to_logger(msg);
-        } else if (data->value > SET_MAX_TEMP) {
-            snprintf(msg, sizeof(msg), "Temperature too high (ID: %d, Value: %.2f)", data->id, data->value);
-            log_to_logger(msg);
-        }
+        pthread_mutex_lock(&buffer->mutex);
+        buffer->head->end_flag = true;  // Data Manager finished processing
+        pthread_mutex_unlock(&buffer->mutex);
 
-        sleep(1);  // Simulate processing delay
+        sleep(1);
     }
 
     pthread_exit(NULL);
 }
+
+

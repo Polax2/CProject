@@ -19,7 +19,7 @@ extern pthread_mutex_t pipe_mutex;
 // Log function to ensure proper thread-safe logging to pipe
 void log_with_buffer_state(const char *msg, sbuffer_t *buffer) {
     char log_msg[256];
-    snprintf(log_msg, sizeof(log_msg), "%s | Buffer address: %p", msg, (void *)buffer);
+    snprintf(log_msg, sizeof(log_msg), "%s | Buffer address: %p \n", msg, (void *)buffer);
     log_to_logger(log_msg);
 }
 
@@ -39,12 +39,12 @@ static void *client_handler(void *arg) {
     char msg[256];
 
     if (buffer == NULL) {
-        log_with_buffer_state("Client handler started with NULL buffer.", buffer);
+        log_with_buffer_state("Client handler started with NULL buffer. \n", buffer);
         free(client_args);
         pthread_exit(NULL);
     }
 
-    snprintf(msg, sizeof(msg), "Client thread started.");
+    snprintf(msg, sizeof(msg), "Client thread started. \n");
     log_with_buffer_state(msg, buffer);
 
     for (int i = 0; i < MOCK_SENSOR_COUNT; i++) {
@@ -52,16 +52,16 @@ static void *client_handler(void *arg) {
         int result = sbuffer_insert(buffer, &data);
 
         if (result == SBUFFER_SUCCESS) {
-            snprintf(msg, sizeof(msg), "Data inserted (ID: %d, Value: %.2f)", data.id, data.value);
+            snprintf(msg, sizeof(msg), "Data inserted (ID: %d, Value: %.2f) \n", data.id, data.value);
             log_with_buffer_state(msg, buffer);
         } else {
-            log_with_buffer_state("Buffer insertion failed in client handler.", buffer);
+            log_with_buffer_state("Buffer insertion failed in client handler. \n", buffer);
         }
 
         sleep(MOCK_SLEEP_TIME);  // Simulate delay between sensor readings
     }
 
-    snprintf(msg, sizeof(msg), "Client thread finished.");
+    snprintf(msg, sizeof(msg), "Client thread finished. \n");
     log_with_buffer_state(msg, buffer);
 
     free(client_args);  // Free the argument struct
@@ -74,39 +74,39 @@ void connmgr_listen(connmgr_args_t *args) {
     char msg[256];
 
     if (buffer == NULL) {
-        log_with_buffer_state("Connection Manager started with NULL buffer.", buffer);
+        log_with_buffer_state("Connection Manager started with NULL buffer. \n", buffer);
         pthread_exit(NULL);
     }
 
-    snprintf(msg, sizeof(msg), "Connection Manager started.");
+    snprintf(msg, sizeof(msg), "Connection Manager started. \n");
     log_with_buffer_state(msg, buffer);
 
     for (int i = 0; i < MOCK_CLIENTS; i++) {
         connmgr_args_t *client_args = malloc(sizeof(connmgr_args_t));
         if (client_args == NULL) {
-            log_to_logger("Failed to allocate memory for client_args.");
+            log_to_logger("Failed to allocate memory for client_args. \n");
             continue;
         }
         client_args->buffer = buffer;
 
         if (client_args->buffer == NULL) {
-            log_with_buffer_state("client_args initialized with NULL buffer.", buffer);
+            log_with_buffer_state("client_args initialized with NULL buffer. \n", buffer);
         }
 
         pthread_t client_thread;
         if (pthread_create(&client_thread, NULL, client_handler, client_args) != 0) {
-            log_with_buffer_state("Failed to create client thread.", buffer);
+            log_with_buffer_state("Failed to create client thread. \n", buffer);
             free(client_args);
             continue;
         }
         pthread_detach(client_thread);
 
-        snprintf(msg, sizeof(msg), "Client %d connected.", i + 1);
+        snprintf(msg, sizeof(msg), "Client %d connected. \n", i + 1);
         log_with_buffer_state(msg, buffer);
 
         sleep(5);  // Simulate delay between new client connections
     }
 
-    snprintf(msg, sizeof(msg), "Connection Manager finished accepting clients.");
+    snprintf(msg, sizeof(msg), "Connection Manager finished accepting clients.\n");
     log_with_buffer_state(msg, buffer);
 }

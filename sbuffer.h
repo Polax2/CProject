@@ -19,6 +19,16 @@ struct sbuffer {
 };
 
 
+typedef struct sbuffer_node {
+    sensor_data_t data;
+    struct sbuffer_node *next;
+    bool end_flag;         // Marks node for removal by Storage Manager
+    bool storage_flag;     // Marks when Storage Manager has processed the node
+} sbuffer_node_t;
+
+
+
+
 sbuffer_t *sbuffer_init();
 int sbuffer_free(sbuffer_t *buffer);
 int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data);
@@ -27,6 +37,12 @@ void sbuffer_terminate(sbuffer_t *buffer);
 bool sbuffer_is_terminated(sbuffer_t *buffer);
 void sbuffer_log_tail(sbuffer_t *buffer) ;
 sensor_data_t *sbuffer_read(sbuffer_t *buffer);
+
+
+// Node Removal Functions
+void sbuffer_mark_for_removal(sbuffer_t *buffer);
+void sbuffer_remove_marked(sbuffer_t *buffer);
+
 // Return codes
 #define SBUFFER_SUCCESS 0
 #define SBUFFER_FAILURE -1

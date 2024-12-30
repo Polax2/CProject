@@ -5,10 +5,36 @@
 #include "sbuffer.h"
 #include "config.h"
 
-typedef struct sbuffer_node {
-    sensor_data_t data;
-    struct sbuffer_node *next;
-} sbuffer_node_t;
+
+// Mark the head node for removal
+void sbuffer_mark_for_removal(sbuffer_t *buffer) {
+    pthread_mutex_lock(&buffer->mutex);
+    if (buffer->head != NULL) {
+        buffer->head->end_flag = true;
+    }
+    pthread_mutex_unlock(&buffer->mutex);
+}
+
+// Remove nodes that are marked for deletion
+void sbuffer_remove_marked(sbuffer_t *buffer) {
+    pthread_mutex_lock(&buffer->mutex);
+
+    while (buffer->head != NULL && buffer->head->end_flag) {
+        sbuffer_node_t *temp = buffer->head;
+        buffer->head = buffer->head->next;
+        free(temp);
+
+        char msg[256];
+        snprintf(msg, sizeof(msg), "Node removed from buffer. \n");
+        log_to_logger(msg);  // Log node removal through the logger process
+    }
+
+    if (buffer->head == NULL) {
+        buffer->tail = NULL;
+    }
+
+    pthread_mutex_unlock(&buffer->mutex);
+}
 
 // Initialize buffer
 sbuffer_t *sbuffer_init() {
@@ -59,7 +85,6 @@ int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data) {
 }
 
 
-// Read data from buffer without removing it
 sensor_data_t *sbuffer_read(sbuffer_t *buffer) {
     if (buffer == NULL) return NULL;
 
@@ -75,12 +100,13 @@ sensor_data_t *sbuffer_read(sbuffer_t *buffer) {
     }
 
     sbuffer_node_t *temp = buffer->head;
-    sensor_data_t *data = &temp->data;  // Return pointer to data without removing the node
+    sensor_data_t *data = &temp->data;
 
     pthread_mutex_unlock(&buffer->mutex);
-
     return data;
 }
+
+
 
 // Cleanup buffer nodes
 void sbuffer_cleanup(sbuffer_t *buffer) {

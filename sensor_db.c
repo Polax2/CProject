@@ -22,17 +22,14 @@ void *sensor_db_process(void *arg) {
     }
 
     log_to_logger("CSV file opened successfully.\n");
-
     fprintf(csv_file, "SensorID,Value,Timestamp\n");
     fflush(csv_file);
-
-    log_to_logger("CSV header written.\n");
 
     while (1) {
         data = sbuffer_read(buffer);
 
         if (data == NULL) {
-            printf("Storage Manager: Buffer empty. Waiting for data...\n");
+            log_to_logger("Storage Manager: Buffer empty. Waiting for data...\n");
             break;
         }
 
@@ -40,10 +37,13 @@ void *sensor_db_process(void *arg) {
         fflush(csv_file);
 
         char msg[256];
-        snprintf(msg, sizeof(msg), "Data saved (ID: %d, Value: %.2f, Timestamp: %ld)", data->id, data->value, data->ts);
+        snprintf(msg, sizeof(msg), "Data saved (ID: %d, Value: %.2f, Timestamp: %ld) \n",
+                 data->id, data->value, data->ts);
         log_to_logger(msg);
 
-        sleep(1);  // Simulate writing delay
+        // Mark for removal and delete the node
+        sbuffer_mark_for_removal(buffer);
+        sbuffer_remove_marked(buffer);
     }
 
     log_to_logger("Closing CSV file.\n");
