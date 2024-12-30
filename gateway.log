@@ -1,58 +1,76 @@
-     0 2024-12-30 01:20:23 Connection Manager started.
-     1 2024-12-30 01:20:23 Buffer insertion failed.
-     2 2024-12-30 01:20:23 CSV file opened successfully.
-     3 2024-12-30 01:20:23 CSV header written.
-     4 2024-12-30 01:20:25 Buffer insertion failed.
-     5 2024-12-30 01:20:27 Buffer insertion failed.
-     6 2024-12-30 01:20:28 Buffer insertion failed.
-     7 2024-12-30 01:20:29 Buffer insertion failed.
-     8 2024-12-30 01:20:30 Buffer insertion failed.
-     9 2024-12-30 01:20:31 Buffer insertion failed.
-    10 2024-12-30 01:20:32 Buffer insertion failed.
-    11 2024-12-30 01:20:33 Buffer insertion failed.
-    12 2024-12-30 01:20:33 Mock client handler finished.
-    13 2024-12-30 01:20:34 Buffer insertion failed.
-    14 2024-12-30 01:20:35 Buffer insertion failed.
-    15 2024-12-30 01:20:36 Buffer insertion failed.
-    16 2024-12-30 01:20:37 Buffer insertion failed.
-    17 2024-12-30 01:20:38 Buffer insertion failed.
-    18 2024-12-30 01:20:38 Mock client handler finished.
-    19 2024-12-30 01:20:39 Buffer insertion failed.
-    20 2024-12-30 01:20:40 Buffer insertion failed.
-    21 2024-12-30 01:20:41 Buffer insertion failed.
-    22 2024-12-30 01:20:42 Buffer insertion failed.
-    23 2024-12-30 01:20:43 Buffer insertion failed.
-    24 2024-12-30 01:20:43 Mock client handler finished.
-    25 2024-12-30 01:20:44 Buffer insertion failed.
-    26 2024-12-30 01:20:45 Buffer insertion failed.
-    27 2024-12-30 01:20:46 Buffer insertion failed.
-    28 2024-12-30 01:20:47 Buffer insertion failed.
-    29 2024-12-30 01:20:48 Buffer insertion failed.
-    30 2024-12-30 01:20:48 Mock client handler finished.
-    31 2024-12-30 01:20:49 Buffer insertion failed.
-    32 2024-12-30 01:20:50 Buffer insertion failed.
-    33 2024-12-30 01:20:51 Buffer insertion failed.
-    34 2024-12-30 01:20:52 Buffer insertion failed.
-    35 2024-12-30 01:20:53 Buffer insertion failed.
-    36 2024-12-30 01:20:53 Mock client handler finished.
-    37 2024-12-30 01:20:54 Buffer insertion failed.
-    38 2024-12-30 01:20:55 Buffer insertion failed.
-    39 2024-12-30 01:20:56 Buffer insertion failed.
-    40 2024-12-30 01:20:57 Buffer insertion failed.
-    41 2024-12-30 01:20:58 Buffer insertion failed.
-    42 2024-12-30 01:20:58 Mock client handler finished.
-    43 2024-12-30 01:20:59 Buffer insertion failed.
-    44 2024-12-30 01:21:00 Buffer insertion failed.
-    45 2024-12-30 01:21:01 Buffer insertion failed.
-    46 2024-12-30 01:21:02 Buffer insertion failed.
-    47 2024-12-30 01:21:03 Buffer insertion failed.
-    48 2024-12-30 01:21:03 Mock client handler finished.
-    49 2024-12-30 01:21:04 Buffer insertion failed.
-    50 2024-12-30 01:21:05 Buffer insertion failed.
-    51 2024-12-30 01:21:06 Buffer insertion failed.
-    52 2024-12-30 01:21:07 Buffer insertion failed.
-    53 2024-12-30 01:21:08 Buffer insertion failed.
-    54 2024-12-30 01:21:08 Mock client handler finished.
-    55 2024-12-30 01:21:09 Buffer insertion failed.
-    56 2024-12-30 01:21:10 Buffer insertion failed.
-    57 2024-12-30 01:21:11 Buffer insertion failed.
+     0 2024-12-30 04:04:16 Connection Manager started. | Buffer address: 0x56dcfffab2a0Client 1 connected. | Buffer address: 0x56dcfffab2a0Client thread started. | Buffer address: 0x56dcfffab2a0Data inserted (ID: 84, Value: 23.60) | Buffer address: 0x56dcfffab2a0
+     1 2024-12-30 04:04:16 CSV file opened successfully.
+     2 2024-12-30 04:04:16 CSV header written.
+     3 2024-12-30 04:04:16 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+     4 2024-12-30 04:04:17 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+     5 2024-12-30 04:04:17 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+     6 2024-12-30 04:04:18 Data inserted (ID: 78, Value: 16.50) | Buffer address: 0x56dcfffab2a0
+     7 2024-12-30 04:04:18 Processing Data (ID: 84, Value: 23.60)
+     8 2024-12-30 04:04:18 Temperature too high (ID: 84, Value: 23.60)
+     9 2024-12-30 04:04:18 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    10 2024-12-30 04:04:19 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    11 2024-12-30 04:04:19 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    12 2024-12-30 04:04:20 Data inserted (ID: 94, Value: 18.50) | Buffer address: 0x56dcfffab2a0
+    13 2024-12-30 04:04:20 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    14 2024-12-30 04:04:21 Client 2 connected. | Buffer address: 0x56dcfffab2a0Client thread started. | Buffer address: 0x56dcfffab2a0Data inserted (ID: 87, Value: 24.20) | Buffer address: 0x56dcfffab2a0
+    15 2024-12-30 04:04:21 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    16 2024-12-30 04:04:21 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    17 2024-12-30 04:04:22 Data inserted (ID: 50, Value: 17.10) | Buffer address: 0x56dcfffab2a0
+    18 2024-12-30 04:04:22 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    19 2024-12-30 04:04:22 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    20 2024-12-30 04:04:23 Data inserted (ID: 63, Value: 17.70) | Buffer address: 0x56dcfffab2a0
+    21 2024-12-30 04:04:23 Processing Data (ID: 84, Value: 23.60)
+    22 2024-12-30 04:04:23 Temperature too high (ID: 84, Value: 23.60)
+    23 2024-12-30 04:04:23 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    24 2024-12-30 04:04:24 Data inserted (ID: 91, Value: 20.90) | Buffer address: 0x56dcfffab2a0
+    25 2024-12-30 04:04:24 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    26 2024-12-30 04:04:24 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    27 2024-12-30 04:04:25 Data inserted (ID: 64, Value: 17.60) | Buffer address: 0x56dcfffab2a0
+    28 2024-12-30 04:04:25 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    29 2024-12-30 04:04:25 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    30 2024-12-30 04:04:26 Client thread finished. | Buffer address: 0x56dcfffab2a0
+    31 2024-12-30 04:04:26 Connection Manager finished accepting clients. | Buffer address: 0x56dcfffab2a0
+    32 2024-12-30 04:04:26 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    33 2024-12-30 04:04:26 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    34 2024-12-30 04:04:27 Data inserted (ID: 41, Value: 17.60) | Buffer address: 0x56dcfffab2a0
+    35 2024-12-30 04:04:27 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    36 2024-12-30 04:04:27 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    37 2024-12-30 04:04:28 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    38 2024-12-30 04:04:28 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    39 2024-12-30 04:04:29 Data inserted (ID: 73, Value: 18.60) | Buffer address: 0x56dcfffab2a0
+    40 2024-12-30 04:04:29 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    41 2024-12-30 04:04:29 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    42 2024-12-30 04:04:30 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    43 2024-12-30 04:04:30 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    44 2024-12-30 04:04:31 Client thread finished. | Buffer address: 0x56dcfffab2a0
+    45 2024-12-30 04:04:31 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    46 2024-12-30 04:04:31 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    47 2024-12-30 04:04:32 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    48 2024-12-30 04:04:32 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    49 2024-12-30 04:04:33 Processing Data (ID: 84, Value: 23.60)
+    50 2024-12-30 04:04:33 Temperature too high (ID: 84, Value: 23.60)
+    51 2024-12-30 04:04:33 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    52 2024-12-30 04:04:34 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    53 2024-12-30 04:04:34 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    54 2024-12-30 04:04:35 Processing Data (ID: 84, Value: 23.60)
+    55 2024-12-30 04:04:35 Temperature too high (ID: 84, Value: 23.60)
+    56 2024-12-30 04:04:35 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    57 2024-12-30 04:04:36 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    58 2024-12-30 04:04:36 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    59 2024-12-30 04:04:37 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    60 2024-12-30 04:04:37 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    61 2024-12-30 04:04:38 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    62 2024-12-30 04:04:39 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    63 2024-12-30 04:04:40 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    64 2024-12-30 04:04:40 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    65 2024-12-30 04:04:41 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    66 2024-12-30 04:04:41 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    67 2024-12-30 04:04:42 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    68 2024-12-30 04:04:42 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    69 2024-12-30 04:04:43 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    70 2024-12-30 04:04:43 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    71 2024-12-30 04:04:44 Processing Data (ID: 84, Value: 23.60)Temperature too high (ID: 84, Value: 23.60)
+    72 2024-12-30 04:04:44 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)
+    73 2024-12-30 04:04:45 Processing Data (ID: 84, Value: 23.60)
+    74 2024-12-30 04:04:45 Temperature too high (ID: 84, Value: 23.60)
+    75 2024-12-30 04:04:45 Data saved (ID: 84, Value: 23.60, Timestamp: 1735527856)

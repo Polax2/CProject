@@ -10,8 +10,9 @@
 #include "sbuffer.h"
 #include "sensor_db.h"
 #include "config.h"
+#include "connmgr.h"
 
-#define TIMEOUT 5  // Timeout in seconds
+#define TIMEOUT 5
 
 sbuffer_t *shared_buffer;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -25,7 +26,9 @@ pthread_t connmgr_tid, storagemgr_tid, datamgr_tid;
 
 void log_to_logger(const char *msg) {
     pthread_mutex_lock(&pipe_mutex);
-    ssize_t bytes_written = write(log_pipe_fd[1], msg, strlen(msg));
+    char log_msg[256];
+    snprintf(log_msg, sizeof(log_msg), "%s\n", msg);
+    ssize_t bytes_written = write(log_pipe_fd[1], log_msg, strlen(msg));
     if (bytes_written < 0) {
         perror("Log pipe write failed");
     }
@@ -70,15 +73,19 @@ void logger_process() {
 
 // Main process logic - Creates 3 threads
 void main_process(int port, int max_clients) {
+    // CREATE SHARED BUFFER
     shared_buffer = sbuffer_init();
     if (shared_buffer == NULL) {
         fprintf(stderr, "Failed to initialize shared buffer\n");
         exit(EXIT_FAILURE);
     }
 
-    // Start connection, data, and storage manager threads
-    if (pthread_create(&connmgr_tid, NULL, (void *)connmgr_listen, shared_buffer) != 0) {
+    connmgr_args_t connmgr_args;
+    connmgr_args.buffer = shared_buffer;
+
+    if (pthread_create(&connmgr_tid, NULL, (void *)connmgr_listen, &connmgr_args) != 0) {
         perror("Failed to create connection manager thread");
+        exit(EXIT_FAILURE);
     }
     if (pthread_create(&storagemgr_tid, NULL, (void *)sensor_db_process, shared_buffer) != 0) {
         perror("Failed to create storage manager thread");
