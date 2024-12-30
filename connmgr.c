@@ -32,81 +32,61 @@ sensor_data_t generate_mock_data() {
     return data;
 }
 
-// Client handler to simulate sensor node communication
-static void *client_handler(void *arg) {
+
+
+// Simulate client connections
+void *client_handler(void *arg) {
     connmgr_args_t *client_args = (connmgr_args_t *)arg;
     sbuffer_t *buffer = client_args->buffer;
+
+    // Simulated sensor data (mock sensor ID for example)
+    sensor_data_t data = { .id = rand() % 100, .value = 20.0, .ts = time(NULL) };
+
     char msg[256];
+    snprintf(msg, sizeof(msg), "Sensor node %d has opened a new connection \n", data.id);
+    log_to_logger(msg);  // Log new connection
 
-    if (buffer == NULL) {
-        log_with_buffer_state("Client handler started with NULL buffer. \n", buffer);
-        free(client_args);
-        pthread_exit(NULL);
+    for (int i = 0; i < 5; i++) {  // Simulate sensor sending 5 data points
+        sbuffer_insert(buffer, &data);
+        snprintf(msg, sizeof(msg), "Data inserted (ID: %d, Value: %.2f) \n", data.id, data.value);
+        log_to_logger(msg);
+        sleep(2);  // Simulate delay between data points
     }
 
-    snprintf(msg, sizeof(msg), "Client thread started. \n");
-    log_with_buffer_state(msg, buffer);
+    snprintf(msg, sizeof(msg), "Sensor node %d has closed the connection \n", data.id);
+    log_to_logger(msg);  // Log disconnection
 
-    for (int i = 0; i < MOCK_SENSOR_COUNT; i++) {
-        sensor_data_t data = generate_mock_data();
-        int result = sbuffer_insert(buffer, &data);
-
-        if (result == SBUFFER_SUCCESS) {
-            snprintf(msg, sizeof(msg), "Data inserted (ID: %d, Value: %.2f) \n", data.id, data.value);
-            log_with_buffer_state(msg, buffer);
-        } else {
-            log_with_buffer_state("Buffer insertion failed in client handler. \n", buffer);
-        }
-
-        sleep(MOCK_SLEEP_TIME);  // Simulate delay between sensor readings
-    }
-
-    snprintf(msg, sizeof(msg), "Client thread finished. \n");
-    log_with_buffer_state(msg, buffer);
-
-    free(client_args);  // Free the argument struct
+    free(client_args);
     pthread_exit(NULL);
 }
 
-// Listen for new connections (mock two clients)
-void connmgr_listen(connmgr_args_t *args) {
-    sbuffer_t *buffer = args->buffer;
-    char msg[256];
+// Listen for new connections
+void connmgr_listen(void *args) {
+    connmgr_args_t *connmgr_args = (connmgr_args_t *)args;
+    sbuffer_t *buffer = connmgr_args->buffer;
 
-    if (buffer == NULL) {
-        log_with_buffer_state("Connection Manager started with NULL buffer. \n", buffer);
-        pthread_exit(NULL);
-    }
 
-    snprintf(msg, sizeof(msg), "Connection Manager started. \n");
-    log_with_buffer_state(msg, buffer);
+    log_to_logger("Connection Manager started. \n");
 
-    for (int i = 0; i < MOCK_CLIENTS; i++) {
+    for (int i = 0; i < 2; i++) {  // Simulate 2 sensor node connections
         connmgr_args_t *client_args = malloc(sizeof(connmgr_args_t));
-        if (client_args == NULL) {
-            log_to_logger("Failed to allocate memory for client_args. \n");
+        if (!client_args) {
+            log_to_logger("Failed to allocate memory for client_args.\n");
             continue;
         }
-        client_args->buffer = buffer;
 
-        if (client_args->buffer == NULL) {
-            log_with_buffer_state("client_args initialized with NULL buffer. \n", buffer);
-        }
+        client_args->buffer = buffer;
 
         pthread_t client_thread;
         if (pthread_create(&client_thread, NULL, client_handler, client_args) != 0) {
-            log_with_buffer_state("Failed to create client thread. \n", buffer);
+            log_to_logger("Failed to create client thread.\n");
             free(client_args);
             continue;
         }
-        pthread_detach(client_thread);
-
-        snprintf(msg, sizeof(msg), "Client %d connected. \n", i + 1);
-        log_with_buffer_state(msg, buffer);
-
-        sleep(5);  // Simulate delay between new client connections
+        pthread_detach(client_thread);  // Allow thread to exit independently
+        sleep(5);  // Simulate time between new client connections
     }
 
-    snprintf(msg, sizeof(msg), "Connection Manager finished accepting clients.\n");
-    log_with_buffer_state(msg, buffer);
+    log_to_logger("Connection Manager finished accepting clients.\n");
 }
+

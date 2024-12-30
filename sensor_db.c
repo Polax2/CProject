@@ -25,12 +25,18 @@ void *sensor_db_process(void *arg) {
     fprintf(csv_file, "SensorID,Value,Timestamp\n");
     fflush(csv_file);
 
+    log_to_logger("A new data.csv file has been created.\n");  // Optional enhancement
+
     while (1) {
         data = sbuffer_read(buffer);
 
         if (data == NULL) {
+            if (buffer->end_flag) {
+                log_to_logger("Storage Manager: No more data. Terminating...\n");
+                break;
+            }
             log_to_logger("Storage Manager: Buffer empty. Waiting for data...\n");
-            break;
+            continue;
         }
 
         fprintf(csv_file, "%d,%.2f,%ld\n", data->id, data->value, data->ts);
@@ -41,7 +47,6 @@ void *sensor_db_process(void *arg) {
                  data->id, data->value, data->ts);
         log_to_logger(msg);
 
-        // Mark for removal and delete the node
         sbuffer_mark_for_removal(buffer);
         sbuffer_remove_marked(buffer);
     }

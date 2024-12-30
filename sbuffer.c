@@ -40,7 +40,7 @@ void sbuffer_remove_marked(sbuffer_t *buffer) {
 sbuffer_t *sbuffer_init() {
     sbuffer_t *buffer = malloc(sizeof(sbuffer_t));
     if (buffer == NULL) {
-        printf("ERROR: Memory allocation for buffer failed.\n");
+        printf("Memory allocation for buffer failed.\n");
         return NULL;
     }
 
@@ -58,13 +58,13 @@ sbuffer_t *sbuffer_init() {
 // Insert data into buffer
 int sbuffer_insert(sbuffer_t *buffer, const sensor_data_t *data) {
     if (!buffer || !data) {
-        printf("sbuffer_insert: Buffer or data is NULL.\n");
+        printf("Buffer or data is NULL.\n");
         return -1;
     }
 
     sbuffer_node_t *new_node = malloc(sizeof(sbuffer_node_t));
     if (!new_node) {
-        printf("sbuffer_insert: Failed to allocate memory for node.\n");
+        printf("Failed to allocate memory for node.\n");
         return -1;
     }
 
