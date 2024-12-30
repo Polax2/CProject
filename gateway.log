@@ -1,9 +1,58 @@
-     0 2024-12-29 22:26:39 Pozdrawiam z Conn
-     1 2024-12-29 22:26:39 Pozdrawiam z sensor_db
-     2 2024-12-29 22:26:39 Pozdrawiam z datamgr
-     3 2024-12-29 22:26:59 Pozdrawiam z Conn
-     4 2024-12-29 22:27:00 Pozdrawiam z sensor_db
-     5 2024-12-29 22:27:00 Pozdrawiam z datamgr
-     6 2024-12-29 22:27:19 Pozdrawiam z Conn
-     7 2024-12-29 22:27:21 Pozdrawiam z sensor_db
-     8 2024-12-29 22:27:21 Pozdrawiam z datamgr
+     0 2024-12-30 01:20:23 Connection Manager started.
+     1 2024-12-30 01:20:23 Buffer insertion failed.
+     2 2024-12-30 01:20:23 CSV file opened successfully.
+     3 2024-12-30 01:20:23 CSV header written.
+     4 2024-12-30 01:20:25 Buffer insertion failed.
+     5 2024-12-30 01:20:27 Buffer insertion failed.
+     6 2024-12-30 01:20:28 Buffer insertion failed.
+     7 2024-12-30 01:20:29 Buffer insertion failed.
+     8 2024-12-30 01:20:30 Buffer insertion failed.
+     9 2024-12-30 01:20:31 Buffer insertion failed.
+    10 2024-12-30 01:20:32 Buffer insertion failed.
+    11 2024-12-30 01:20:33 Buffer insertion failed.
+    12 2024-12-30 01:20:33 Mock client handler finished.
+    13 2024-12-30 01:20:34 Buffer insertion failed.
+    14 2024-12-30 01:20:35 Buffer insertion failed.
+    15 2024-12-30 01:20:36 Buffer insertion failed.
+    16 2024-12-30 01:20:37 Buffer insertion failed.
+    17 2024-12-30 01:20:38 Buffer insertion failed.
+    18 2024-12-30 01:20:38 Mock client handler finished.
+    19 2024-12-30 01:20:39 Buffer insertion failed.
+    20 2024-12-30 01:20:40 Buffer insertion failed.
+    21 2024-12-30 01:20:41 Buffer insertion failed.
+    22 2024-12-30 01:20:42 Buffer insertion failed.
+    23 2024-12-30 01:20:43 Buffer insertion failed.
+    24 2024-12-30 01:20:43 Mock client handler finished.
+    25 2024-12-30 01:20:44 Buffer insertion failed.
+    26 2024-12-30 01:20:45 Buffer insertion failed.
+    27 2024-12-30 01:20:46 Buffer insertion failed.
+    28 2024-12-30 01:20:47 Buffer insertion failed.
+    29 2024-12-30 01:20:48 Buffer insertion failed.
+    30 2024-12-30 01:20:48 Mock client handler finished.
+    31 2024-12-30 01:20:49 Buffer insertion failed.
+    32 2024-12-30 01:20:50 Buffer insertion failed.
+    33 2024-12-30 01:20:51 Buffer insertion failed.
+    34 2024-12-30 01:20:52 Buffer insertion failed.
+    35 2024-12-30 01:20:53 Buffer insertion failed.
+    36 2024-12-30 01:20:53 Mock client handler finished.
+    37 2024-12-30 01:20:54 Buffer insertion failed.
+    38 2024-12-30 01:20:55 Buffer insertion failed.
+    39 2024-12-30 01:20:56 Buffer insertion failed.
+    40 2024-12-30 01:20:57 Buffer insertion failed.
+    41 2024-12-30 01:20:58 Buffer insertion failed.
+    42 2024-12-30 01:20:58 Mock client handler finished.
+    43 2024-12-30 01:20:59 Buffer insertion failed.
+    44 2024-12-30 01:21:00 Buffer insertion failed.
+    45 2024-12-30 01:21:01 Buffer insertion failed.
+    46 2024-12-30 01:21:02 Buffer insertion failed.
+    47 2024-12-30 01:21:03 Buffer insertion failed.
+    48 2024-12-30 01:21:03 Mock client handler finished.
+    49 2024-12-30 01:21:04 Buffer insertion failed.
+    50 2024-12-30 01:21:05 Buffer insertion failed.
+    51 2024-12-30 01:21:06 Buffer insertion failed.
+    52 2024-12-30 01:21:07 Buffer insertion failed.
+    53 2024-12-30 01:21:08 Buffer insertion failed.
+    54 2024-12-30 01:21:08 Mock client handler finished.
+    55 2024-12-30 01:21:09 Buffer insertion failed.
+    56 2024-12-30 01:21:10 Buffer insertion failed.
+    57 2024-12-30 01:21:11 Buffer insertion failed.

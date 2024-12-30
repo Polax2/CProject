@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include "sbuffer.h"
-#include "lib/tcpsock.h"
+
 
 // Connection manager argument structure
 // struct connmgr_args {
@@ -17,13 +17,13 @@
 //     tcpsock_t *client;
 // };
 
+
 struct connmgr_args {
-    int is_buffer_alive;
+    sbuffer_t *buffer;
+    pthread_mutex_t *mutex;
 };
 
-// Function to listen for connections
+//void connmgr_listen(struct connmgr_args *args);
 void connmgr_listen(struct connmgr_args *args);
-
-
-
 #endif // CONNMGR_H
+

@@ -1,9 +1,14 @@
-/**
- * \author {AUTHOR}
- */
+#ifndef SET_MIN_TEMP
+#define SET_MIN_TEMP = 10
+#endif
+
+#ifndef SET_MAX_TEMP
+#define SET_MAX_TEMP = 30
+#endif
 
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
+
 
 #include <stdint.h>
 #include <pthread.h>
